@@ -1,26 +1,58 @@
-import Contact from '../models/Contact.js';
+import { Contact } from "../models/contactModel.js";
 
-const listContacts = (filter = {}, setting = {}) =>
-  Contact.find(filter, '-createdAt -updatedAt', setting).populate('owner', 'email subscription');
+async function listContacts(owner) {
+  const contact = await Contact.find({ owner }, "-createdAt -updatedAt");
+  return contact;
+}
 
-const countContacts = filter => Contact.countDocuments(filter);
+async function getContactById(contactId, owner) {
+  const contact = await Contact.findOne({ _id: contactId, owner: owner });
+  return contact || null;
+}
 
-const addContact = data => Contact.create(data);
+async function removeContact(contactId, owner) {
+  const contactToRemove = await Contact.findOneAndDelete({
+    _id: contactId,
+    owner: owner,
+  });
+  return contactToRemove;
+}
 
-const getContactByFilter = filter => Contact.findOne(filter);
+async function addContact(data, owner) {
+  const newContacts = await Contact.create({ ...data, owner });
+  return newContacts;
+}
 
-const updateContactByFilter = (filter, data) => Contact.findOneAndUpdate(filter, data);
+async function updateContactById(contactId, updateData, owner) {
+  const updatedContact = await Contact.findOneAndUpdate(
+    {
+      _id: contactId,
+      owner: owner,
+    },
+    updateData,
+    { new: true }
+  );
+  return updatedContact;
+}
+async function updateStatusContact(contactId, updateData, owner) {
+  const updatedContact = await Contact.findOneAndUpdate(
+    {
+      _id: contactId,
+      owner: owner,
+    },
+    updateData,
+    {
+      new: true,
+    }
+  );
+  return updatedContact;
+}
 
-const removeContactByFilter = filter => Contact.findOneAndDelete(filter);
-
-const updateContactStatusByFilter = (filter, data) => Contact.findOneAndUpdate(filter, data);
-
-export default {
+export {
   listContacts,
-  countContacts,
+  getContactById,
+  removeContact,
   addContact,
-  getContactByFilter,
-  updateContactByFilter,
-  removeContactByFilter,
-  updateContactStatusByFilter,
+  updateContactById,
+  updateStatusContact,
 };

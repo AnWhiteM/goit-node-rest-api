@@ -1,14 +1,35 @@
-import express from 'express';
-import authControllers from '../controllers/authControllers.js';
-import { userSingupSinginSchema } from '../schemas/usersSchemas.js';
-import validateBody from '../decorators/validateBody.js';
-import authenticate from '../middlewares/authenticate.js';
+import { Router } from "express";
 
-const authRouter = express.Router();
+import {
+  checkLoginData,
+  checkRegisterData,
+  protect,
+} from "../middelwares/authMiddelwares.js";
+import {
+  getAllUsers,
+  getCurrent,
+  login,
+  logout,
+  register,
+} from "../controllers/userControllers.js";
+import validateBody from "../helpers/validateBody.js";
+import { loginUserSchema, registerUserSchema } from "../schemas/usersSchema.js";
 
-authRouter.post('/register', validateBody(userSingupSinginSchema), authControllers.singup);
-authRouter.post('/login', validateBody(userSingupSinginSchema), authControllers.singin);
-authRouter.get('/current', authenticate, authControllers.getCurrent);
-authRouter.post('/logout', authenticate, authControllers.logout);
+const router = Router();
 
-export default authRouter;
+router.get("/", protect, getAllUsers);
+
+router.get("/current", protect, getCurrent);
+
+router.post(
+  "/register",
+  checkRegisterData,
+  validateBody(registerUserSchema),
+  register
+);
+
+router.post("/login", checkLoginData, validateBody(loginUserSchema), login);
+
+router.post("/logout", protect, logout);
+
+export default router;
